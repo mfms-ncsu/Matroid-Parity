@@ -135,7 +135,7 @@ var
            end;
 
 
-           procedure checkAdjTrace(e,f: ELEMENT; equiv,adjacent: boolean);
+           procedure checkAdjTrace(e, f: ELEMENT; equiv, adjacent: boolean);
            begin
               if adjacent then begin 
                  if equiv then begin
@@ -235,7 +235,9 @@ var
                                     mateUnlabelled,degen: boolean);
            begin
               if unlabelled or pending then begin
-                 write('     ',DELIM,f:MAXDIGIT,DELIM,': ');
+                 write('     ');
+                 writeElement(f);
+                 write(': ');
                  if equiv then
                     writeln(DELIM,f:MAXDIGIT,DELIM,' equivalent to ',DELIM,e:MAXDIGIT,DELIM,
                             ', so do nothing')
@@ -1118,23 +1120,24 @@ procedure updateDepGraph;
 
    procedure PrintEl(j: ELEMENT);
       begin
+         write(' +');
          writeElement(j);
-         write('   ');
       end;  
 
     procedure PrintDepGraph;
       var
 	i: ELEMENT;
       begin
-	writeln(' Adjacency lists for dependency graph');
+	writeln('> Adjacency lists for dependency graph');
 	for i:= 1 to NumEl + NumSingle + NumXform do
 	  if InMS[i] then begin
-             write(' Adjacency list for element ');
              writeElement(i);
-             writeln;
+             write(':');
              ForAdjacent(i, printEl);
              writeln;
 	  end;
+         writeln('< end, adjacency lists');
+         writeln;
       end; (* Print Dep Graph *)  
 
 
@@ -1731,9 +1734,9 @@ var
       begin
          if not augmented then
          begin
-            checkAdjTrace(e,f, Equivalent(e,f), IsAdjacent(e,f)); 
+            checkAdjTrace(e, f, Equivalent(e,f), IsAdjacent(e,f)); 
             if IsAdjacent(e,f) and not Equivalent(e,f) then
-               blossomAugment(e,f);
+               blossomAugment(e, f);
          end; 
       end; (* check Adj *)
 
