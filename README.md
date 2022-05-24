@@ -11,6 +11,9 @@ any corrections, modifications, or reimplementations (email: mfms@ncsu.edu).
 
 To compile with `fpc`, use the `-Miso` option.
 
+** CAUTION **
+*There appears to be a bug. More information is in the Counterexample subdirectory. The relevant input is counterexample.txt.*
+
 Input to the parity program (from stdin) takes the following format:
 (edges come in pairs, so edge 2k-1 and 2k form a pair)
 ```
@@ -39,41 +42,51 @@ The function IncreaseMatching implements the algorithm of an earlier version of 
 
 The modules are also available in the following separate files.
 
-`userGlob.i` -- contains definitions of various global constants, types,
+`userGlob.p` -- contains definitions of various global constants, types,
 	and variables that the user may want to change (e.g. maximum
 	number of elements allowed).
 
-`parityGlob.i` -- contains global definitions that are independent of the
+`parityGlob.p` -- contains global definitions that are independent of the
 	type or size of matroids used.
 
-`input-output.i` -- contains I/O routines; comments in this module explain
+`input-output.p` -- contains I/O routines; comments in this module explain
 	the required format for the input.
 
-`trace-module.i` -- contains routines that do trace printout of the progress
+`trace-module.p` -- contains routines that do trace printout of the progress
 	of the algorithm (these should be modified to suit the taste of the
 	user -- some could be turned into "stubs" if the corresponding print-
 	out is not wanted).
 
-`blossom-augment.i` -- contains routines that perform blossom and augment
+`blossom-augment.p` -- contains routines that perform blossom and augment
 	steps.
 
-`depgraph.i` -- contains routines that access the dependence graph. Two
-	subordinate modules, transforms.i and singletons.i handle situations
+`depgraph.p` -- contains routines that access the dependence graph. Two
+	subordinate modules, transforms.p and singletons.p handle situations
 	unique to transforms and singletons.
 
-`graph.i` -- implements an abstract data type GRAPH (as described in AHU 1983).
+`graph.p` -- implements an abstract data type GRAPH (as described in AHU 1983).
 	This module may be useful in other graph algorithms, also.
 
-`spforest.i` -- this module maintains a spanning forest (i.e. the current base),
+`spforest.p` -- this module maintains a spanning forest (i.e. the current base),
 	using preorder numbering to determine adjacencies of elements not
 	in the forest.
 
-`queues.i` -- general purpose routines for queues
+`queues.p` -- general purpose routines for queues
 
-`equiv.i` -- maintains the Union/Find structures using parent pointers and
+`equiv.p` -- maintains the Union/Find structures using parent pointers and
 	data compression.
 
 I hope the comments in the code, along with this outline are adequate to
 explain what's going on. If not, I can provide more detailed
 documentation.
+
+## Sample inputs
+
+All have a `.txt` extension.
+
+* `1986-Combinatorica-Gabow_Fig_2_2` - example from the paper
+
+* `tst1, tst2, tst3` - some small examples
+
+* `2016-Theory_Seminar-Fig_*` - examples (figures) from the paper *A Gentle Introduction to Matroid Algorithmics*, in `2016-Theory_Reading_Group.pdf`; pictures related to these are in the related pdf files
 
