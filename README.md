@@ -24,7 +24,7 @@ Input to the parity program (from stdin) takes the following format:
         <edge 2m-1>
         <edge 2m>
         0 0
-        <edge # of 1st edge initial matching>
+        <edge # of 1st edge initial matching> ** Edge number! **
         <edge # of 2nd edge initial matching>
         ...
         <edge # of 2k-1st edge in initial matching>
@@ -76,9 +76,7 @@ The modules are also available in the following separate files.
 `equiv.p` -- maintains the Union/Find structures using parent pointers and
 	data compression.
 
-I hope the comments in the code, along with this outline are adequate to
-explain what's going on. If not, I can provide more detailed
-documentation.
+The comments in the code, along with this outline should be adequate to explain how the code functions. If not, more detailed documentation can be provided -- contact mfms@ncsu.edu.
 
 ## Sample inputs
 
