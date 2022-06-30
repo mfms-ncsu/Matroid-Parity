@@ -231,10 +231,11 @@ var
               end
            end;
 
-           procedure tryToGrowTrace(e,f,fbar: ELEMENT; equiv,unlabelled,pending,
-                                    mateUnlabelled,degen: boolean);
+           procedure tryToGrowTrace(e, f, fbar: ELEMENT;
+                                    equiv, unlabeled, pending,
+                                    mateUnlabeled, degen: boolean);
            begin
-              if unlabelled or pending then begin
+              if unlabeled or pending then begin
                  write('     ');
                  writeElement(f);
                  write(': ');
@@ -247,9 +248,9 @@ var
                  else if pending then 
                     writeln('s[',DELIM,f:MAXDIGIT,DELIM,']>s[',DELIM,e:MAXDIGIT,DELIM,
                             '] ,so do nothing')
-                 else if not mateUnlabelled then
+                 else if not mateUnlabeled then
                     writeln(DELIM,fbar:MAXDIGIT,DELIM,
-                            ' already labelled so do nothing');
+                            ' mate already labeled so do nothing');
               end;
            end;
 
@@ -1414,7 +1415,7 @@ Mstar is set to the new (augmented) basis, or the old basis if
 there is not a better matching. }
 
 const
-   NOLABEL = 0;     { serial number assigned to unlabelled elements }
+   NOLABEL = 0;     { serial number assigned to unlabeled elements }
 type
    dualLabel = record
                   back: ELEMENT;
@@ -1425,7 +1426,7 @@ var
    e: ELEMENT;     { element on 'to be scanned' queue }
    SerialNum: integer;             { keeps track of last assigned serial #}
    Serial: array [ELEMENT] of integer; { serial number of elements }
-   ToBeScannedQ,             { queue of unscanned, labelled elements}
+   ToBeScannedQ,             { queue of unscanned, labeled elements}
    BasicScannedQ,            { queue of scanned elements in basis }
    NonBasicScannedQ: QUEUE;  { queue of scanned elements not in basis }
    Degenerate: array [ELEMENT] of boolean; { indicates if an element
@@ -1435,7 +1436,7 @@ var
    OnPath: array [ELEMENT] of ELEMENT; { used by closest common ancestor
                                               search of routine BlossomAugment }
           
-   procedure giveLabel( f, bac, rev: ELEMENT);
+   procedure giveLabel(f, bac, rev: ELEMENT);
    { This routine assigns the label (bac,rev) to f, assigns f a 
    serial number, and places f on the 'to be scanned' queue }
    begin
@@ -1454,16 +1455,16 @@ var
 
       procedure labelSingleton(e: ELEMENT);
       begin
-         giveLabel(e, NULLELEMENT, NULLELEMENT);
+        giveLabel(e, NULLELEMENT, NULLELEMENT);
       end;
    
 
-      procedure unlabelled(e: ELEMENT);
+      procedure unlabeled(e: ELEMENT);
       begin
          Serial[e]:= NOLABEL;
       end;
    
-      procedure mergeMates( e: ELEMENT);
+      procedure mergeMates(e: ELEMENT);
       begin
          MakeEquivalent(e, Mate(e));
       end;
@@ -1484,7 +1485,7 @@ var
       InitialQ(NonBasicScannedQ);
       SerialNum:= 0;
       ForSingleton(labelSingleton);
-      ForElement(unlabelled);
+      ForElement(unlabeled);
       Serial[NULLELEMENT]:= NOLABEL;
       ForElement(notDegenerate);
       ForSingleton(notOnPath);
@@ -1501,7 +1502,7 @@ var
    is processed, and new blossoms are
    formed or the matching is augmented if this is possible.
 
-   Next, elements not already labelled which are adjacent to 
+   Next, elements not already labeled which are adjacent to 
    e are scanned. New labels are assigned where appropriate. }
    
    
@@ -1562,7 +1563,7 @@ var
 	end; (* quick trace *)
       
 
-      procedure blossom(e,f,bud, tip1,tip2: ELEMENT);
+procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
 	{ This procedure forms the blossom which includes arc e,f.
 	  bud is the bud of the blossom.
 	  tip1, and tip2 are the predecessors of bud on the path back from
@@ -1599,49 +1600,47 @@ var
 	begin (* blossom *)
 	  { initializations }
 	  { determine if t1 and t2 are true tips }
-	  labelTips:= not isTrueTips(tip1,tip2);
-	  makeXform:= not (labelTips or Equivalent(tip1,tip2));
+	  labelTips:= not isTrueTips(tip1, tip2);
+	  makeXform:= not (labelTips or Equivalent(tip1, tip2));
 	  ePathPtr:= e;
 	  fPathPtr:= f;
-	  MakeEquivalent(e,f);
+	  MakeEquivalent(e, f);
 	  { end initializations }
-           blossomTrace(bud,tip1,tip2,not labelTips);   
+    blossomTrace(bud, tip1, tip2, not labelTips);   
 
-	{ trace paths back from e and f and assign lablels }
-	   { set PathPtr's to point to first element on each path
-	     whose mate needs a label  }
-	  ePathPtr:= pruneList( ePathPtr);
-	  fPathPtr:= pruneList( fPathPtr);
+	  { trace paths back from e and f and assign lablels }
+	  { set PathPtr's to point to first element on each path
+	    whose mate needs a label  }
+	  ePathPtr:= pruneList(ePathPtr);
+	  fPathPtr:= pruneList(fPathPtr);
 
 	  repeat
 	    { trace 'e' path }
-	    while (Serial[ePathPtr] > Serial[fPathPtr]) and
-		    (ePathPtr <> bud) do begin
-	      MakeEquivalent(e,ePathPtr);
+	    while (Serial[ePathPtr] > Serial[fPathPtr]) and (ePathPtr <> bud) do begin
+	      MakeEquivalent(e, ePathPtr);
 	      if (Mate(ePathPtr) <> tip1) or labelTips then
-		  giveLabel(Mate(ePathPtr), f,e);
-	      ePathPtr:= pruneList( SearchLabel[ePathPtr].back);
+		      giveLabel(Mate(ePathPtr), f, e);
+	      ePathPtr:= pruneList(SearchLabel[ePathPtr].back);
 	    end; (* while *)
 	    { trace f path  }
-	    while (Serial[fPathPtr] > Serial[ePathPtr]) and
-		    (fPathPtr <> bud) do begin
+	    while (Serial[fPathPtr] > Serial[ePathPtr]) and (fPathPtr <> bud) do begin
 	      MakeEquivalent(f,fPathPtr);
 	      if (Mate(fPathPtr) <> tip2) or labelTips then
-		  giveLabel(Mate(fPathPtr), e,f);
-	      fPathPtr:= pruneList( SearchLabel[fPathPtr].back);
+		      giveLabel(Mate(fPathPtr), e, f);
+	      fPathPtr:= pruneList(SearchLabel[fPathPtr].back);
 	    end; (* while *)
-          until (ePathPtr = bud) and (fPathPtr = bud);
+    until (ePathPtr = bud) and (fPathPtr = bud);
 
-	 if makeXform then begin
-	   x:= CreateTransform(tip1, tip2, bud);
-	   giveLabel(x,f,e);
+	  if makeXform then begin
+	    x:= CreateTransform(tip1, tip2, bud);
+	    giveLabel(x, f, e);
 	    { initialize OnPath for new transform }
-	   OnPath[x]:= NULLELEMENT;  
-	 end; (* make Xform *)
+	    OnPath[x]:= NULLELEMENT;  
+	  end; (* make Xform *)
 	end; (* blossom  *) 
       
 
-      procedure augment(e,f: ELEMENT);
+  procedure augment(e,f: ELEMENT);
 	{ this procedure traces the augmenting path which 
 	  includes the arc e,f  }
 	begin
@@ -1650,167 +1649,158 @@ var
 	  tracePath(f, NULLELEMENT, Swap);
 	  augmented:= true;
 	end; (* augment *)
-      
 
-      function closestCommonAncestor(e,f: ELEMENT): ELEMENT;
-	{ This function finds and returns the first node on the
-	  paths back from e and f which is followed by its mate.
-	  An important side effect is the setting of t1 and t2,
-	   which are the predecessors on each path of the 
-	   node at which the paths join.
-	  The function proceeds in two passes.
-	  In the first pass, the path from e to a root is determined.
-	   Each node in the path which is follwed by its mate has its 
-	   predecessor stored in the array OnPath.
-	  In the second pass, the path back from f is traced. Each node
-	   on this path which is followed by its mate is checked
-           against the OnPath array to see if it was also on the path
-	   back from e. The sceond pass maintains the predecessor 
-	   of the node being examined.   }
-       var
-	cca: ELEMENT;  { estimate of join node }
-	previous: ELEMENT; { previous element visited }
-       
+  function closestCommonAncestor(e, f: ELEMENT): ELEMENT;
+	  { This function finds and returns the first node on the
+	    paths back from e and f which is followed by its mate.
+	    An important side effect is the setting of t1 and t2,
+	    which are the predecessors on each path of the 
+	    node at which the paths join.
+	    The function proceeds in two passes.
+	    In the first pass, the path from e to a root is determined.
+	    Each node in the path which is follwed by its mate has its 
+	    predecessor stored in the array OnPath.
+	    In the second pass, the path back from f is traced. Each node
+	    on this path which is followed by its mate is checked
+      against the OnPath array to see if it was also on the path
+	    back from e. The sceond pass maintains the predecessor 
+	    of the node being examined.   }
+    var
+	    cca: ELEMENT;  { estimate of join node }
+	    previous: ELEMENT; { previous element visited }
 
-       procedure mark(e: ELEMENT);
-	 begin
-	   OnPath[e]:= previous;
-	   if IsTransform(e) then 
-	     previous:= Mate(SecondTip(e))  
-			  { will pick up trace from back label}
-	   else
-	     previous:= Mate(e);
-	 end;
+    procedure mark(e: ELEMENT);
+	    begin
+	      OnPath[e]:= previous;
+	      if IsTransform(e) then 
+	        previous:= Mate(SecondTip(e))  
+			    { will pick up trace from back label}
+	      else
+	        previous:= Mate(e);
+	  end; { mark }
 
-       procedure comparePaths(e: ELEMENT);
-	 begin
-	  if cca = NULLELEMENT then
-	    if OnPath[e] <> NULLELEMENT then begin
-	      cca:= e;
-	      t1:= OnPath[e];
-	     end (* if *)
-	    else if IsTransform(e) then 
-	      t2:= Mate(SecondTip(e))
-	    else
-	      t2:= Mate(e);
-	 end; (* compare Path *)
+    procedure comparePaths(e: ELEMENT);
+	    begin
+	      if cca = NULLELEMENT then
+	        if OnPath[e] <> NULLELEMENT then begin
+	          cca:= e;
+	          t1:= OnPath[e];
+	        end (* if *)
+	      else if IsTransform(e) then 
+	        t2:= Mate(SecondTip(e))
+	      else
+	        t2:= Mate(e);
+	  end; (* compare Path *)
 	      
-      procedure eraseMarks( e: ELEMENT);
-	begin
-	  OnPath[e]:= NULLELEMENT;
-	end;
+    procedure eraseMarks( e: ELEMENT);
+	    begin
+	      OnPath[e]:= NULLELEMENT;
+	    end;
+
+  begin (* closest Common Ancestor *)
+  	previous:= f;      { initialize }
+	  { first pass }
+	  quickTrace(e, NULLELEMENT, mark);
+	  { second pass }
+	  cca:= NULLELEMENT;
+	  quickTrace(f, NULLELEMENT, comparePaths);
+	  closestCommonAncestor:= cca;
+
+	  if cca <> NULLELEMENT then
+	    { blossom found, clean up OnPath for next time }
+	    quickTrace(e, NULLELEMENT, eraseMarks);
+  end; (* closest Common Ancestor *)
+
+  begin (* blossom Augment *)
+    if not Equivalent(e, f) then begin
+	    bud:= closestCommonAncestor(e, f);
+	    if bud = NULLELEMENT then
+	      augment(e,f)
+	    else
+	      blossom(e,f,bud, t1,t2);
+    end; (* if *)
+  end; (* blossom augment *)
 
 
-      begin (* closest Common Ancestor *)
-	previous:= f;      { initialize }
-	{ first pass }
-	quickTrace( e, NULLELEMENT, mark);
-	{ second pass }
-	cca:= NULLELEMENT;
-	quickTrace(f, NULLELEMENT, comparePaths);
-	closestCommonAncestor:= cca;
-
-	if cca <> NULLELEMENT then
-	   { blossom found, clean up OnPath for next time }
-	  quickTrace( e, NULLELEMENT, eraseMarks);
-      end; (* closest Common Ancestor *)
-
-    begin (* blossom Augment *)
-      if not Equivalent(e,f) then begin
-	bud:= closestCommonAncestor(e,f);
-	if bud = NULLELEMENT then
-	  augment(e,f)
-	else
-	  blossom(e,f,bud, t1,t2);
-      end; (* if *)
-    end; (* blossom augment *)
-
-
-      procedure checkAdj(f: ELEMENT);
-      { This procedure checks the conditions for an arc
-      between two labelled elements to be 'scan-able', 
+  procedure checkAdj(f: ELEMENT);
+    { This procedure checks the conditions for an arc
+      between two labeled elements to be 'scan-able', 
       and calls BlossomAugment if it is.    }
+    begin
+      if not augmented then begin
+        checkAdjTrace(e, f, Equivalent(e,f), IsAdjacent(e,f)); 
+        if IsAdjacent(e,f) and not Equivalent(e,f) then
+          blossomAugment(e, f);
+      end; 
+  end; (* check Adj *)
 
-      begin
-         if not augmented then
-         begin
-            checkAdjTrace(e, f, Equivalent(e,f), IsAdjacent(e,f)); 
-            if IsAdjacent(e,f) and not Equivalent(e,f) then
-               blossomAugment(e, f);
-         end; 
-      end; (* check Adj *)
-
-
-      procedure tryToGrow( f: ELEMENT);
-      { This procedure examines an element f adjacent to e, and
+  procedure tryToGrow(f: ELEMENT);
+    { This procedure examines an element f adjacent to e, and
       assigns it a label if appropriate.  }
-      var
-         x: ELEMENT;
-      begin
-         tryToGrowTrace(e,f,Mate(f), Equivalent(e,f),Serial[f]=NOLABEL,
-                        Serial[f]>Serial[e],Serial[Mate(f)]= NOLABEL,
-                        Degenerate[f]); 
-         if not Equivalent(e,f) and
-            (Serial[f] = NOLABEL) and
-            (Serial[Mate(f)] = NOLABEL) and
-            not Degenerate[f] 	then begin
-               if IsAdjacent(e,Mate(f)) then begin
-                  degenerateBlossomTrace;  
-                  x:= CreateTransform(f,Mate(f),e);
-                  Degenerate[f]:= true;
-                  Degenerate[Mate(f)]:= true;
-                  giveLabel(x,e,NULLELEMENT);
-                  OnPath[x]:= NULLELEMENT;
-               end  (* if IsAdj... *)
-               else
-                  giveLabel( Mate(f), e, NULLELEMENT);
-            end (* if not Equivalent...  *)
-      end; (* tryToGrow *)
+    var
+      x: ELEMENT;
+    begin
+      tryToGrowTrace(e, f, Mate(f), Equivalent(e,f), Serial[f]=NOLABEL,
+                   Serial[f]>Serial[e], Serial[Mate(f)]= NOLABEL,
+                   Degenerate[f]); 
+      if not Equivalent(e,f) and
+          (Serial[f] = NOLABEL) and
+          (Serial[Mate(f)] = NOLABEL) and
+          not Degenerate[f] then begin
+        if IsAdjacent(e,Mate(f)) then begin
+          degenerateBlossomTrace;  
+          x:= CreateTransform(f,Mate(f),e);
+          Degenerate[f]:= true;
+          Degenerate[Mate(f)]:= true;
+          giveLabel(x,e,NULLELEMENT);
+          OnPath[x]:= NULLELEMENT;
+        end  (* if IsAdj... *)
+        else
+          giveLabel( Mate(f), e, NULLELEMENT);
+      end (* if not Equivalent...  *)
+  end; (* tryToGrow *)
 
-
-   begin (* scan *)
-      scanTrace(e);   
-      if IsInMstar(e) then begin
-         DoToQ(NonBasicScannedQ, checkAdj);
-         AddQ(BasicScannedQ, e);
-      end
-      else begin
-         DoToQ(BasicScannedQ, checkAdj);
-         AddQ(NonBasicScannedQ, e);
-      end;  (* if IsInMstar(e)  *)
-      if not augmented then
-         ForAdjacent(e, tryToGrow);
-   end; (* scan *)
-
+  begin (* scan *)
+    scanTrace(e);   
+    if IsInMstar(e) then begin
+      DoToQ(NonBasicScannedQ, checkAdj);
+      AddQ(BasicScannedQ, e);
+    end
+    else begin
+      DoToQ(BasicScannedQ, checkAdj);
+      AddQ(NonBasicScannedQ, e);
+    end;  (* if IsInMstar(e)  *)
+    if not augmented then
+      ForAdjacent(e, tryToGrow);
+  end; (* scan *)
 
 begin (* IncreaseMatching *)
-   initVars;
-   while (not MTQ(ToBeScannedQ)) and ( not augmented) do begin
-      e:= DelQ(ToBeScannedQ);
-      scan(e);
-   end; (* while*)
-   IncreaseMatching:= augmented;
-   { recover space from queues }
-   FlushQ(ToBeScannedQ);
-   FlushQ(BasicScannedQ);
-   FlushQ(NonBasicScannedQ);
+  initVars;
+  while (not MTQ(ToBeScannedQ)) and (not augmented) do begin
+    e:= DelQ(ToBeScannedQ);
+    scan(e);
+  end; (* while*)
+  IncreaseMatching:= augmented;
+  { recover space from queues }
+  FlushQ(ToBeScannedQ);
+  FlushQ(BasicScannedQ);
+  FlushQ(NonBasicScannedQ);
 end; (* IncreaseMatching *)
-
 
 procedure Solution;   
 { This procedure print the solution }
-var i:ELEMENT;
+  var i:ELEMENT;
 
-begin
-   writeln;
-   writeln;
-   for i:= 1 to NumEl do
+  begin
+     writeln;
+     writeln;
+    for i:= 1 to NumEl do
       if InMS[i] then
          writeln(' edge ', i : MAXDIGIT,' in optimal solution  (',
                  Parity[i]^.end1 : MAXDIGIT, ', ', Parity[i]^.end2 : MAXDIGIT, ')');
 end;  (* solution *)    
 
-begin
+begin { main program }
    Initialize;
    {D PrintAdjList(InputGraph);}
    PrintDepGraph;
