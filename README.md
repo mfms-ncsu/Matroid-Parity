@@ -6,7 +6,9 @@ parity program based on the algorithm described in Gabow and Stallmann,
 Shapiro under the direction of Matthias (Matt) Stallmann, who may be contacted at
 `mfms@ncsu.edu`
 
-If you use this program, please let me know how you used it and send me 
+Please see the LICENSE file for information about condiditions of use.
+
+If you use this program, let me know how you used it and send me 
 any corrections, modifications, or reimplementations (email: mfms@ncsu.edu).
 
 To compile with `fpc`, use the `-Miso` option.
@@ -38,7 +40,7 @@ Comments can be appended to any line of the input. Anything beyond the first two
 All modules of the parity program are consolidated in `parpgm.p`.
 
 The function IncreaseMatching implements the algorithm of an earlier version of our paper.
-**Note:** This program is independent of the type of matroid (other types of matroids can be used if appropriate supporting routines for defining transforms, dependence graph adjacencies, etc. are provided.
+**Note:** This program is independent of the type of matroid. Other types of matroids can be used if appropriate supporting routines for defining transforms, dependence graph adjacencies, etc. are provided.
 
 The modules are also available in the following separate files.
 
