@@ -1510,28 +1510,22 @@ var
   scan. }
 
 
-    procedure blossomAugment(e,f:ELEMENT);
-      { This procedure examines the paths from e and f back to their
+procedure blossomAugment(e,f:ELEMENT);
+  { This procedure examines the paths from e and f back to their
 	roots. If the paths join, then a blossom is formed.
 	If the paths do not join, an augmentation is called for. }
-      var
-	bud: ELEMENT;  { the first element on both paths which is
-			 followed by its mate }
-	t1,t2: ELEMENT; { the predecessors of bud on the path back
-			  from e and f, respectivly }
+  var
+	  bud: ELEMENT;  { the first element on both paths which is followed by its mate }
+	  t1,t2: ELEMENT; { the predecessors of bud on the path back from e and f, respectivly }
       
-      procedure tracePath(fromHere, toThere: ELEMENT;
-			  procedure P(e: ELEMENT));
+  procedure tracePath(fromHere, toThere: ELEMENT; procedure P(e: ELEMENT));
 	  { tracePath calls itself recursivly to trace the path from
 	    node fromHere to node toThere.
 	    procedure P is performed for each parity pair on the path }
 	var
 	  fH: ELEMENT; { equal to fromHere when fromHere is not a transform,
-			 equal to a tip of fromHere when fromHere is 
-			 a transform }
-
-	
-	begin  (* trace Path *)
+			             equal to a tip of fromHere when fromHere is a transform }
+	begin  (* tracePath *)
 	  if fromHere <> toThere then begin
 	    if IsTransform(fromHere) then 
 	      fH:= Parity[fromHere]^.el1
@@ -1542,50 +1536,47 @@ var
 	    if SearchLabel[fromHere].reverz <> NULLELEMENT then 
 	      tracePath(SearchLabel[fromHere].reverz, Mate(fH), P);
 	    tracePath(SearchLabel[fromHere].back, toThere, P);
-	  end; (* if *)
-	end; (* trace Path *)
+	  end; (* if fromHere not same as toThere *)
+	end; (* tracePath *)
 
-
-      procedure quickTrace( fromHere, toThere: ELEMENT; 
-			    procedure P(e:ELEMENT));
+  procedure quickTrace( fromHere, toThere: ELEMENT; procedure P(e:ELEMENT));
 	  { this procedure traces the path from fromHere to toThere, 
 	    ignoring reverse pointers 
 	     procedure P is performed for every parity pair encountered on the
 	     quick trace path }
 	
-	begin  (* trace Path *)
+	begin  (* quickTrace *)
 	  if fromHere <> toThere then begin
 	    P(fromHere);
 	    quickTrace(SearchLabel[fromHere].back, toThere, P);
 	  end; (* if *)
-	end; (* quick trace *)
-      
+	end; (* quickTrace *)
 
-procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
-	{ This procedure forms the blossom which includes arc e,f.
-	  bud is the bud of the blossom.
-	  tip1, and tip2 are the predecessors of bud on the path back from
-	   e and f, respectivly. tip1 and tip2 may be tips 
-	   of the new blossom }
-	var
-	  ePathPtr, fPathPtr: ELEMENT; { markers for tracing path back from
+  procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
+	  { This procedure forms the blossom which includes arc e,f.
+	    bud is the bud of the blossom.
+	    tip1, and tip2 are the predecessors of bud on the path back from
+	    e and f, respectivly. tip1 and tip2 may be tips 
+	    of the new blossom }
+	  var
+	    ePathPtr, fPathPtr: ELEMENT; { markers for tracing path back from
 					 e and f, resp. }
-	  x: ELEMENT;           { number of new transform }
-	  makeXform: boolean;   { true if new transform should be formed }
-	  labelTips: boolean;   { false if tip1 and tip2 are true tips }
+	    x: ELEMENT;           { number of new transform }
+	    makeXform: boolean;   { true if new transform should be formed }
+	    labelTips: boolean;   { false if tip1 and tip2 are true tips }
 	
-	function isTrueTips(h,g: ELEMENT):boolean;
-	 { determines if h and g are the true tips of the new blossom.
-	   It is assummed that h and g are the predecessors of the bud. }
+	  function isTrueTips(h,g: ELEMENT):boolean;
+	    { determines if h and g are the true tips of the new blossom.
+	      It is assummed that h and g are the predecessors of the bud. }
 	  begin
 	    isTrueTips:= (Serial[h] = NOLABEL) and (Serial[g] = NOLABEL);
 	  end;
 
-	function pruneList( pathPtr: ELEMENT): ELEMENT;
+	  function pruneList( pathPtr: ELEMENT): ELEMENT;
 	  { traces path back from pathPtr until an element is reached
 	    whose mate needs a label, or the bud is reached }
-	  var
-	    top: ELEMENT;
+	    var
+	      top: ELEMENT;
 	  begin
 	    top:= pathPtr;
 	    while ( IsTransform(top) or (Serial[Mate(top)] <> NOLABEL)) 
@@ -1593,7 +1584,6 @@ procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
 	      top:= SearchLabel[top].back;
 	    pruneList:= top;
 	  end;  (* prune List  *)
-
 	
 	begin (* blossom *)
 	  { initializations }
@@ -1637,7 +1627,6 @@ procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
 	  end; (* make Xform *)
 	end; (* blossom  *) 
       
-
   procedure augment(e,f: ELEMENT);
 	{ this procedure traces the augmenting path which 
 	  includes the arc e,f  }
@@ -1709,15 +1698,15 @@ procedure blossom(e, f, bud, tip1, tip2 : ELEMENT);
 	    quickTrace(e, NULLELEMENT, eraseMarks);
   end; (* closest Common Ancestor *)
 
-  begin (* blossom Augment *)
-    if not Equivalent(e, f) then begin
-	    bud:= closestCommonAncestor(e, f);
-	    if bud = NULLELEMENT then
-	      augment(e,f)
-	    else
-	      blossom(e,f,bud, t1,t2);
-    end; (* if *)
-  end; (* blossom augment *)
+begin (* blossom Augment *)
+  if not Equivalent(e, f) then begin
+	  bud:= closestCommonAncestor(e, f);
+	  if bud = NULLELEMENT then
+	    augment(e,f)
+	  else
+	    blossom(e,f,bud, t1,t2);
+  end; (* if e and f are not equivalent *)
+end; (* blossom augment *)
 
 
   procedure checkAdj(f: ELEMENT);
