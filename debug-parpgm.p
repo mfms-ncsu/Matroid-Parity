@@ -82,14 +82,13 @@ var
 { ****************** Global variables for all matroids ********************}
 
 var
-   Parity: array [ELEMENT] of EPTR;     { parity data structure }
-   { eptr points to edges in input graph } 
+   Parity: array [ELEMENT] of EPTR;  { array of edges in the graph }
    Mstar : array [1..MAXRANK] of ELEMENT; { current basis }
    BasicXform: array [1..MAXRANK] of ELEMENT;  { transforms in current basis }
    NumBasicXform: integer;   { number of transforms in the basis }
    NumEl: integer;           { number of matroid elements in problem }
    NumSingle : integer;      { number of singletons in Mstar }
-   NumXform : integer;       { number of transforms in current step }
+   NumXform : integer;       { number of transforms in current iteration }
    InMS : array [ELEMENT] of boolean; { indicates if element is in Mstar }
    BasisSize: 0..MAXRANK;       { rank of matroid basis }
 
@@ -101,157 +100,168 @@ var
 }
 
 var
-   InBlossomTrace: boolean;  { indicator for output formatting }
+  InBlossomTrace: boolean;  { indicator for output formatting }
 
-           procedure writeElement(e : ELEMENT);
-           var elementPtr : EPTR; 
-           begin
-              elementPtr := Parity[e];
-              if e > NumEl + NumSingle then { is a transform }
-                 write(DELIM, e:MAXDIGIT, DELIM,
-                       ' !xf [', elementPtr^.el1:MAXDIGIT, ', ', elementPtr^.el2:MAXDIGIT, '] ')
-           else
-              write(DELIM, e:MAXDIGIT, DELIM,
-                    ' (', elementPtr^.end1:MAXDIGIT, ', ', elementPtr^.end2:MAXDIGIT, ') ');
-           end;
+    procedure writeElement(e : ELEMENT);
+    var
+      elementPtr : EPTR; 
+    begin
+      elementPtr := Parity[e];
+      if e > NumEl + NumSingle then { is a transform }
+        write(DELIM, e:MAXDIGIT, DELIM,
+              ' !xf [', elementPtr^.el1:MAXDIGIT, ', ', elementPtr^.el2:MAXDIGIT, '] ')
+      else
+        write(DELIM, e:MAXDIGIT, DELIM,
+             ' (', elementPtr^.end1:MAXDIGIT, ', ', elementPtr^.end2:MAXDIGIT, ') ');
+    end; { writeElement }
 
-           procedure augmentTrace;
-           begin
-              writeln('augment step-');
-           end;
+    procedure augmentTrace;
+    begin
+      writeln('augment step-');
+    end;
 
-           procedure blossomTrace(bud,tip1,tip2:ELEMENT; trueTips: boolean);
-           begin
-              InBlossomTrace:= true;
-              writeln('blossom step-');
-              writeln('          t0=',DELIM,tip1:MAXDIGIT,DELIM,
-                      '    t1=',DELIM,tip2:MAXDIGIT,DELIM,
-                      '    b=',DELIM,bud:MAXDIGIT,DELIM);
-              if trueTips then
-                 writeln('          true tips')
-              else
-                 writeln('          not true tips');
-           end;
+    procedure blossomTrace(bud,tip1,tip2:ELEMENT; trueTips: boolean);
+    begin
+      InBlossomTrace:= true;
+      writeln('blossom step -');
+      write('      tip1 = ');
+      writeElement(tip1);
+      write(', tip2 = ');
+      writeElement(tip2);
+      write(', bud = ');
+      writeElement(bud);
+      writeln;
+      if trueTips then
+        writeln('          true tips')
+      else
+        writeln('          not true tips');
+    end; { blossomTrace }
+
+    procedure checkAdjTrace(e, f: ELEMENT; equiv, adjacent: boolean);
+    begin
+      if adjacent then begin 
+        if equiv then begin
+          write('     ');
+          writeElement(f);
+          write(' equivalent to ');
+          writeElement(e);
+          writeln(', so do nothing')
+        end { equivalent }
+        else begin
+          write('     ');
+          writeElement(f);
+          write(': ')
+        end { not equivalent }
+      end { adjacent }
+    end; { checkAdjTrace }
+
+    procedure compactSinglesTrace;
+    var
+      index: integer;
+    begin
+      InBlossomTrace:= false;  { initialize formatting boolean }
+      writeln;
+      writeln;
+      writeln('*************  enter IncreaseMatching ***************');
+      writeln;
+      writeln(' there are now ', NumSingle:MAXDIGIT, ' singletons');
+      writeln(' they are:');
+      for index := NumEl + 1 to NumEl + NumSingle do begin
+        writeElement(index); writeln
+      end
+    end; { compactSinglesTrace }
+
+    procedure CreateTransformTrace(z, x, y, bud: ELEMENT);
+    begin
+      InBlossomTrace:= false;
+      write('           create ');
+      write(z:MAXDIGIT);
+      write(' = T(');
+      writeElement(x);
+      write(', ');
+      writeElement(y);
+      write(', ');
+      writeElement(bud);
+      writeln(')');
+      write('          ');   { format for label trace }
+    end; { CreateTransformTrace }
 
 
-           procedure checkAdjTrace(e, f: ELEMENT; equiv, adjacent: boolean);
-           begin
-              if adjacent then begin 
-                 if equiv then begin
-                    write('     ');
-                    writeElement(f);
-                    write(' equivalent to ');
-                    writeElement(e);
-                    writeln(', so do nothing')
-                 end
-              else begin
-                 write('     ');
-                 writeElement(f);
-                 write(': ')
-              end
-              end
-           end;
-
-           procedure compactSinglesTrace;
-           var
-              index: integer;
-           begin
-              InBlossomTrace:= false;  { initialize formatting boolean }
-              writeln;
-              writeln;
-              writeln('*************  enter IncreaseMatching ***************');
-              writeln;
-              writeln(' there are now ', NumSingle:MAXDIGIT, ' singletons');
-              writeln(' they are:');
-              for index := NumEl + 1 to NumEl + NumSingle do begin
-                writeElement(index); writeln
-              end
-           end;
-
-           procedure CreateTransformTrace(z,x,y,bud: ELEMENT);
-           begin
-              InBlossomTrace:= false;
-              writeln('           create ',DELIM,z:MAXDIGIT,DELIM,'=T(',
-                      DELIM,x:MAXDIGIT,DELIM,',',DELIM,y:MAXDIGIT,DELIM,',',
-                      DELIM,bud:MAXDIGIT,DELIM,'),  ');
-              write('          ');   { format for label trace }
-           end;
+    procedure degenerateBlossomTrace;
+    begin
+      writeln('degenerate blossom');
+    end;
 
 
-           procedure degenerateBlossomTrace;
-           begin
-              writeln('degenerate blossom');
-           end;
+    procedure giveLabelTrace(f,back,reverse: ELEMENT; serial: integer);
+    begin
+      if InBlossomTrace then
+        write('          ');
+      writeln('label[',DELIM,f:MAXDIGIT,DELIM,']=(',DELIM,back:MAXDIGIT,DELIM,
+                ',' ,DELIM,reverse:MAXDIGIT,DELIM, ')   s(',DELIM,f:MAXDIGIT,DELIM,
+                ')=',serial:MAXDIGIT);
+    end; { giveLabelTrace }
 
+    procedure newBasisGraphTrace(e: ELEMENT; v,w: VERTEX);
+    begin
+    end;
 
-           procedure giveLabelTrace(f,back,reverse: ELEMENT; serial: integer);
-           begin
-              if InBlossomTrace then
-                 write('          ');
-              writeln('label[',DELIM,f:MAXDIGIT,DELIM,']=(',DELIM,back:MAXDIGIT,DELIM,
-                      ',' ,DELIM,reverse:MAXDIGIT,DELIM, ')   s(',DELIM,f:MAXDIGIT,DELIM,
-                      ')=',serial:MAXDIGIT);
-           end;
+    procedure readMatchTrace(initMatch: INDICATOR; num: integer);
+    var
+      arc: integer;
+    begin
+      writeln('Initial Matching List'); 
+      for arc := 1 to num do
+        if initMatch[arc] then begin
+            writeElement(arc);
+            writeln;
+        end
+    end;
 
-           procedure newBasisGraphTrace(e: ELEMENT; v,w: VERTEX);
-           begin
-           end;
+    procedure scanTrace(e: ELEMENT);
+    begin
+      writeln;
+      write('scan label on ');
+      writeElement(e);
+      writeln(' ; adjacent to--');
+    end;
 
-           procedure readMatchTrace(initMatch: INDICATOR; num: integer);
-           var arc: integer;
-           begin
-              writeln('Initial Matching List'); 
-              for arc := 1 to num do
-                 if initMatch[arc] then begin
-                    writeElement(arc);
-                    writeln;
-                 end
-           end;
+    procedure SwapTrace(e: ELEMENT; putIn: boolean);
+    begin
+      if putIn then begin
+        write('    put element ');
+        writeElement(e);
+        writeln(' in basis')
+      end
+      else begin
+        write('    removed element ');
+        writeElement(e);
+        writeln(' from basis')
+      end
+    end;
 
-           procedure scanTrace(e: ELEMENT);
-           begin
-              writeln;
-              write('scan label on ');
-              writeElement(e);
-              writeln(' ; adjacent to--');
-           end;
-
-           procedure SwapTrace(e: ELEMENT; putIn: boolean);
-           begin
-              if putIn then begin
-                write('    put element ');
-                writeElement(e);
-                writeln(' in basis')
-              end
-              else begin
-                write('    removed element ');
-                writeElement(e);
-                writeln(' from basis')
-              end
-           end;
-
-           procedure tryToGrowTrace(e, f, fbar: ELEMENT;
-                                    equiv, unlabeled, pending,
-                                    mateUnlabeled, degen: boolean);
-           begin
-              if unlabeled or pending then begin
-                 write('     ');
-                 writeElement(f);
-                 write(': ');
-                 if equiv then
-                    writeln(DELIM,f:MAXDIGIT,DELIM,' equivalent to ',DELIM,e:MAXDIGIT,DELIM,
-                            ', so do nothing')
-                 else if degen then
-                    writeln(DELIM,f:MAXDIGIT,DELIM,
-                            ' is a tip of a degenerate blossom, so do nothing.')
-                 else if pending then 
-                    writeln('s[',DELIM,f:MAXDIGIT,DELIM,']>s[',DELIM,e:MAXDIGIT,DELIM,
-                            '] ,so do nothing')
-                 else if not mateUnlabeled then
-                    writeln(DELIM,fbar:MAXDIGIT,DELIM,
-                            ' mate already labeled so do nothing');
-              end;
-           end;
+    procedure tryToGrowTrace(e, f, fbar: ELEMENT;
+                             equiv, unlabeled, pending,
+                             mateUnlabeled, degen: boolean);
+    begin
+      if unlabeled or pending then begin
+        write('     ');
+        writeElement(f);
+        write(': ');
+        if equiv then
+          writeln(DELIM,f:MAXDIGIT,DELIM,' equivalent to ',DELIM,e:MAXDIGIT,DELIM,
+                  ', so do nothing')
+        else if degen then
+          writeln(DELIM,f:MAXDIGIT,DELIM,
+                  ' is a tip of a degenerate blossom, so do nothing.')
+        else if pending then 
+          writeln('s[',DELIM,f:MAXDIGIT,DELIM,']>s[',DELIM,e:MAXDIGIT,DELIM,
+                  '] ,so do nothing for now')
+        else if not mateUnlabeled then
+          writeln(DELIM,fbar:MAXDIGIT,DELIM,
+                  ' mate already labeled so do nothing');
+        end; { if unlabeled or pending }
+    end; { tryToGrowTrace }
 
 { **** end parityGlob.i **** }
 
@@ -943,15 +953,15 @@ function Equivalent(x,y: ELEMENT): boolean;
       Equivalent:= false
     else begin
       if IsTransform(x) then
-	a:= Parity[x]^.el2
+	      a:= Parity[x]^.el2
       else
-	a:= x;
+	      a:= x;
       if IsTransform(y) then 
-	b:= Parity[y]^.el2
+	      b:= Parity[y]^.el2
       else
-	b:= y;
+	      b:= y;
       Equivalent:= AreEquivalent(a,b);
-    end; (* else *)
+    end; (* else, i.e., neither element is a singleton *)
   end; (* Equivalent *)
 
 
@@ -968,7 +978,6 @@ procedure MakeEquivalent( x,y: ELEMENT);
       b:= Parity[y]^.el2
     else
       b:= y;
-    
     Merge(a,b);
   end; (* Make Equivalent *)
     
@@ -1036,7 +1045,7 @@ function CreateTransform(x,y,b: ELEMENT): ELEMENT;
     else
       InMS[xnum]:= false;
     CreateTransform:= xnum;
-    CreateTransformTrace(xnum, x,y,b);  
+    CreateTransformTrace(xnum, x, y, b);  
   end; (* Create Transform *)
 
 
@@ -1057,9 +1066,9 @@ function Mate(e: ELEMENT): ELEMENT;
       Mate:= NULLELEMENT
     else
       if (e mod 2) = 0 then
-	Mate:= e-1
+	      Mate:= e - 1
       else
-	Mate:= e+1;
+	      Mate:= e + 1;
   end;
 
 procedure ForAdjacent(e: ELEMENT; procedure P(o:ELEMENT));
@@ -1707,7 +1716,6 @@ begin (* blossom Augment *)
 	    blossom(e,f,bud, t1,t2);
   end; (* if e and f are not equivalent *)
 end; (* blossom augment *)
-
 
   procedure checkAdj(f: ELEMENT);
     { This procedure checks the conditions for an arc
