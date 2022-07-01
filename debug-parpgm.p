@@ -1,4 +1,3 @@
-
 { **** parpgm.p **** }
 program maxpar(input,output);
 
@@ -54,8 +53,8 @@ type
 
 
 var
-   InputGraph: GRAPH;              { the input graph itself        }
-   BasisTree: FOREST;              { spanning forest of current basis }
+  InputGraph: GRAPH;              { the input graph itself        }
+  BasisTree: FOREST;              { spanning forest of current basis }
 
 { **** end userGlob.i **** }
    
@@ -451,64 +450,64 @@ procedure CopyGr(g1: GRAPH; var g2: GRAPH);
 	   IsInCycle does not check that v,w is an edge in the forest.
 }
 
+  {
+    Performs a dfs of the graph, applying procedure P to each tree edge uv
+  }
   procedure InitSpForest(g : GRAPH; var t : FOREST; procedure P(u, v : VERTEX));
-
   var
-     visited : array [VERTEX] of boolean;   { indicator array }
-     dfsn : integer;     { global to search for assigning PRE }
+    visited : array [VERTEX] of boolean;   { indicator array }
+    dfsn : integer;     { global to search for assigning PRE }
 
-     function search(node : VERTEX): integer;
+    function search(node : VERTEX): integer;
      { search is called recusivly to perform a depth first search.
      The input parameter is the current node in the search.
      search returns the highest pre-order number of a descendent
-     of the input node.   }
+     of the input node. }
    
-        procedure continueSearch(v: VERTEX);
+      procedure continueSearch(v: VERTEX);
         begin
-           {D writeln(' enter CONTINUE SEARCH with node', v);}
-           if not visited[v] then begin
-              { do P to the edge node,v }
+          {D writeln(' enter CONTINUE SEARCH with node', v);}
+          if not visited[v] then begin
+            { do P to the edge node,v }
               P(node, v);
               t.high[node] := search(v);
            end; (* if *)
-        end; (* continueSearch *)
+      end; (* continueSearch *)
 
-      begin  (* Search *)
-         {D writeln (' entered search with node ', node);}
-         visited[node] := true;
-         dfsn:= dfsn + 1;
-         t.pre[node] := dfsn;
-         t.high[node] := dfsn;
-         {D writeln(' pre-order number of node is ', dfsn);}
-
-         ForAdjGr(g, node, continueSearch); {  search through adjacency list }
-
-         search:= t.high[node];
+    begin  (* search *)
+      {D writeln (' entered search with node ', node);}
+      visited[node] := true;
+      dfsn:= dfsn + 1;
+      t.pre[node] := dfsn;
+      t.high[node] := dfsn;
+      {D writeln(' pre-order number of node is ', dfsn);}
+      ForAdjGr(g, node, continueSearch); {  search through adjacency list }
+      search:= t.high[node];
       {D writeln(' HIGH set to ',t.high[node],' for node ',node);}
     end; (* Search *)
 
-  procedure rootIfNotVisited( v: VERTEX);
+  procedure rootIfNotVisited(v: VERTEX);
     begin
       {D writeln(' entered ROOT IF NOT VISITED with vertex', v);}
       if not visited[v] then
-	t.high[v]:= search(v);
-    end; (* Root etc *)
+	      t.high[v]:= search(v);
+  end; (* rootIfNotVisited *)
 
-  procedure initialVisited( v: VERTEX );
+  procedure initialVisited(v: VERTEX );
     begin
       visited[v]:= false;
-    end;
+  end;
 
   begin (* InitSpForest *)
-     { initialize  }
-     dfsn := 0;
-     ForVertex(g, initialVisited);
+    { initialize  }
+    dfsn := 0;
+    ForVertex(g, initialVisited);
      { end initialization }
-     ForVertex(g, rootIfNotVisited);
+    ForVertex(g, rootIfNotVisited);
   end; (* InitSpForest *)
 
 
-function IsInCycle( v,w,x,y: VERTEX; t: FOREST): boolean;
+function IsInCycle(v,w,x,y: VERTEX; t: FOREST): boolean;
    { this function returns true if edge (v,w) is in the fundamental 
      cycle formed by adding edge (x,y) to the forest t }
 
@@ -806,24 +805,23 @@ function IsSingleton(e: ELEMENT): boolean;
 
   procedure makeSingleton(v1, v2 : VERTEX);
   { this procedure adds the edge v1, v2 to Mstar }
-
-  var
-     e : EPTR;       { points to an edge }
-     pos : ELEMENT;  { array index }
+    var
+      e : EPTR;       { points to an edge }
+      pos : ELEMENT;  { array index }
   begin
-     new(e);
-     e^.end1 := v1;
-     e^.end2 := v2;
-     NumSingle := NumSingle + 1;
-     pos := NumEl + NumSingle;
+    new(e);
+    e^.end1 := v1;
+    e^.end2 := v2;
+    NumSingle := NumSingle + 1;
+    pos := NumEl + NumSingle;
 
-     Parity[pos] := e;
-     Mstar[NumSingle] := pos;
-     BasisSize := BasisSize + 1;
-     InMS[pos] := true;
-     write('Created singleton ');
-     writeElement(pos);
-     writeln;
+    Parity[pos] := e;
+    Mstar[NumSingle] := pos;
+    BasisSize := BasisSize + 1;
+    InMS[pos] := true;
+    write('Created singleton ');
+    writeElement(pos);
+    writeln;
   end; (* makeSingleton *)
   
 
@@ -865,36 +863,39 @@ procedure ForSingleton( procedure P(e:ELEMENT));
   }
 
   var 
-     gap, last : integer;
+    gap, last : integer;
 
   begin (* compact singles *)
-     last := NumEl + NumSingle;    { position of last singleton  }
-     gap := NumEl + 1;             { position of first singleton }
-     { main loop }
-     repeat
-       while not IsInMstar(last) and (last >= gap) do begin
-          last := last - 1
-          { last now points to highest numbered singleton still in Mstar  }
-       end;
-       while IsInMstar(gap) and (gap < last) do
-          gap:= gap+1;
-       { gap now points to position of a singleton removed from Mstar 
-	  or to last if compaction is completed }
+    last := NumEl + NumSingle;    { position of last singleton  }
+    gap := NumEl + 1;             { position of first singleton }
+    { main loop }
+    repeat
+      while not IsInMstar(last) and (last >= gap) do begin
+        last := last - 1
+      end;
+      { last now points to highest numbered singleton still in Mstar }
+      while IsInMstar(gap) and (gap < last) do begin
+        gap:= gap + 1;
+      end;
+      { gap now points to position of a singleton removed from Mstar 
+	      or to last if compaction is completed }
 
-        if (last > gap) then begin { not at end of compaction }
-           Parity[gap]:= Parity[last];
-           InMS[gap]:= true;
-           InMS[last]:= false;
-           last:= last-1;
-        end; (* if *)
-     until last<=gap;
-     { reset number of singletons  }
-     if (last < gap) then 
+      if (last > gap) then begin
+        { not at end of compaction, so swap singleton in last position
+          with the one in gap that is no longer in Mstar }
+        Parity[gap]:= Parity[last];
+        InMS[gap]:= true;
+        InMS[last]:= false;
+        last:= last - 1;
+      end; (* if *)
+    until last <= gap;
+    { reset number of singletons  }
+    if (last < gap) then 
        NumSingle := 0
-     else
-       NumSingle := last - NumEl;
-       compactSinglesTrace; 
-   end; (* compact singles *)
+    else
+      NumSingle := last - NumEl;
+      compactSinglesTrace; 
+  end; (* compact singles *)
 
 { ***** end, singletons.i ****** }
 
@@ -979,21 +980,21 @@ function IsAdjacent(e,f: ELEMENT): boolean;
       inel,outel: ELEMENT;  { element in and not in basis, resp }
     begin
       if IsInMstar(e) then begin
-	inel:= e;
-	outel:= f;
-       end
+	      inel:= e;
+	      outel:= f;
+      end
       else begin
-	inel:= f;
-	outel:= e;
+	      inel:= f;
+	      outel:= e;
       end; (* if *)
-      isAdjElEl:= IsInCycle( Parity[inel]^.end1, Parity[inel]^.end2,
+      isAdjElEl:= IsInCycle(Parity[inel]^.end1, Parity[inel]^.end2,
         		     Parity[outel]^.end1, Parity[outel]^.end2,
         		     BasisTree);
     end;
 
   function isAdjXEl( x,e: ELEMENT): boolean;
     begin
-      isAdjXEl:= isAdjElEl(Parity[x]^.el1, e) <> isAdjElEl( Parity[x]^.el2, e);
+      isAdjXEl:= isAdjElEl(Parity[x]^.el1, e) <> isAdjElEl(Parity[x]^.el2, e);
     end;
 
   function isAdjXX( x,y: ELEMENT): boolean;
@@ -1002,17 +1003,17 @@ function IsAdjacent(e,f: ELEMENT): boolean;
     end;
 
   begin  (* IsAdjacent *)
-      if IsInMstar(e) = IsInMstar(f) then
-       IsAdjacent:= false
-      else if IsTransform(e) then 
-             if IsTransform(f) then 
-	       IsAdjacent:= isAdjXX(e,f)
-	     else
-	       IsAdjacent:= isAdjXEl(e,f)
-           else if IsTransform(f) then
-	          IsAdjacent:= isAdjXEl(f,e)
-	        else
-	          IsAdjacent:= isAdjElEl(e,f);
+    if IsInMstar(e) = IsInMstar(f) then
+      IsAdjacent:= false
+    else if IsTransform(e) then 
+      if IsTransform(f) then 
+	      IsAdjacent:= isAdjXX(e,f)
+	    else
+	      IsAdjacent:= isAdjXEl(e,f)
+    else if IsTransform(f) then
+	      IsAdjacent:= isAdjXEl(f,e)
+	  else
+	    IsAdjacent:= isAdjElEl(e,f);
   end; (* IsAdjacent *)
 
 
@@ -1061,7 +1062,7 @@ function Mate(e: ELEMENT): ELEMENT;
 	Mate:= e+1;
   end;
 
-procedure ForAdjacent( e: ELEMENT; procedure P(o:ELEMENT));
+procedure ForAdjacent(e: ELEMENT; procedure P(o:ELEMENT));
   var 
     f: ELEMENT;    { name of an element adjacent to e }
     i: integer;    { loop indexing }
@@ -1077,7 +1078,7 @@ procedure ForAdjacent( e: ELEMENT; procedure P(o:ELEMENT));
 	 P(Mstar[i]);
 { look at transforms in Mstar  }
      for i:= 1 to NumBasicXform do
-       if IsAdjacent(e,BasicXform[i]) then
+       if IsAdjacent(e, BasicXform[i]) then
 	 P(BasicXform[i]);
    end; (* if *)
   end; (* For Adjacent  *)
@@ -1091,17 +1092,17 @@ var
 
 begin (* GetInitialBasis *)
    { initialize }
-   for j:= 1 to NumEl do
-      InMS[j]:= false;
-   BasisSize:= 0;
-   NumXform:= 0;
+  for j:= 1 to NumEl do
+    InMS[j]:= false;
+  BasisSize:= 0;
+  NumXform:= 0;
    { end initialize }
-   InitSpForest(InputGraph, BasisTree, makeSingleton);
+  InitSpForest(InputGraph, BasisTree, makeSingleton);
 end; (* GetInitialBasis *)
 
 
 
-procedure ForElement( procedure P( e: ELEMENT));
+procedure ForElement(procedure P(e: ELEMENT));
   var
     i: ELEMENT;
   begin
@@ -1175,17 +1176,17 @@ procedure Update;
 
   procedure newBasisGraph;
     { this procedure sets BasisGraph to be the graph of basic edges }
-    var
-     i: integer;
-    begin
-      EraseGr(BasisGraph);
-      for i:= 1 to BasisSize do
-	 begin newBasisGraphTrace( Mstar[i],
-			      Parity[Mstar[i]]^.end1, Parity[Mstar[i]]^.end2); 
-	AddEdgeGr( BasisGraph, Parity[Mstar[i]]^.end1,
-			       Parity[Mstar[i]]^.end2);
+  var
+    i: integer;
+  begin
+    EraseGr(BasisGraph);
+    for i:= 1 to BasisSize do
+	  begin
+      newBasisGraphTrace(Mstar[i],
+			                  Parity[Mstar[i]]^.end1, Parity[Mstar[i]]^.end2); 
+	    AddEdgeGr(BasisGraph, Parity[Mstar[i]]^.end1, Parity[Mstar[i]]^.end2);
 	 end; (* for *) 
-    end; (* new basis graph *)
+  end; (* new basis graph *)
 
   begin (* Update *)
     compactSingles;
@@ -1253,103 +1254,100 @@ procedure Initialize;
       the edges in the input graph.
       These items are stored in the appropriate data structures.  }
 
-    var
-       newedge: EPTR;      { pointer to edge data type }
-       v1,v2: VERTEX;      { endpoints of an edge } 
-       a1,a2: integer;     { used to read in vertex pairs.
+  var
+    newedge: EPTR;      { pointer to edge data type }
+    v1,v2: VERTEX;      { endpoints of an edge } 
+    a1,a2: integer;     { used to read in vertex pairs.
 			     Separate variables are required for this purpose
 			     as the type VERTEX does not include 0, the end 
 			     of list delimiter value }
-       even: boolean;      { tests number of edges input }
-    begin
-      readln(NumNode);
-      InitGr(InputGraph, NumNode);
-       { read in edges }
+    even: boolean;      { tests number of edges input }
+  begin
+    readln(NumNode);
+    InitGr(InputGraph, NumNode);
+    { read in edges }
+    NumArcs:= 0;       { initialize number of edges }
+    even := true;
+    readln(a1,a2);
+    while ( a1 <> 0 ) and ( a2<> 0 ) do begin
+	    v1 := a1;
+	    v2 := a2;
+      NumArcs:= NumArcs + 1;
+      even:= not even;
+      {E writeln(' edge number ',NumArcs,' has endpoints ',v1,v2); }
+      { check edge }
+      if NumArcs > MAXE then begin
+	      writeln(' maximum number of edges ',MAXE,' exceeded');
+	      halt;
+	    end; (* if max edges exceeded *)
+	    if ( v1 < 1 ) or ( v1 > NumNode ) or ( v2 < 1 ) or ( v2 > NumNode ) then begin
+	      writeln(' node numbers must be in the range 1..', NumNode);
+	      halt;
+	    end; (* if node number out of range *)
+      { end checks }
 
-      NumArcs:= 0;       { initialize number of edges }
-      even := true;
+      { store edge }
+      new(newedge);
+      newedge^.end1 := v1;
+      newedge^.end2 := v2;
+      Parity[NumArcs] := newedge;
+
+      { update adjacency list }
+      AddEdgeGr(InputGraph,v1,v2);
       readln(a1,a2);
-      while ( a1 <> 0 ) and ( a2<> 0 ) do begin
-	v1 := a1;
-	v2 := a2;
-        NumArcs:= NumArcs+1;
-        even:= not even;
-         {E writeln(' edge number ',NumArcs,' has endpoints ',v1,v2); }
-         { check edge }
-        if NumArcs > MAXE then begin
-	  writeln(' maximum number of edges ',MAXE,' exceeded');
-	  halt;
-	end; (* if *)
-	if ( v1 < 1 ) or ( v1 > NumNode ) or ( v2 < 1 ) or ( v2 > NumNode ) then begin
-	  writeln(' node numbers must be in the range 1..',NumNode);
-	  halt;
-	end; (* if *)
-         { end checks }
-         { store edge }
-
-         new(newedge);
-         newedge^.end1 := v1;
-         newedge^.end2 := v2;
-         Parity[NumArcs] := newedge;
-
-         { update adjacency list }
-         AddEdgeGr(InputGraph,v1,v2);
-         readln(a1,a2);
-      end; (* while a1<>0 and a2<>0 *)
-      if not even then begin
-        writeln(' number of edges in input graph must be even');
-        halt;
-      end;
-    { set NumEl }
-      NumEl:= NumArcs;
-    end; (* read Arcs *)
-
+    end; (* while a1<>0 and a2<>0 *)
+    if not even then begin
+      writeln(' number of edges in input graph must be even');
+      halt;
+    end; { odd number of edges }
+    { set number of elements }
+    NumEl:= NumArcs;
+  end; (* read Arcs *)
 
   procedure readMatch;
     { This procedure reads in the initial matching. }
 
-    var
-      arc: ELEMENT;  { arc is an edge in the intial matching }
+  var
+    arc: ELEMENT;  { arc is an edge in the intial matching }
     
     procedure initInitMatch;
-      var
-	i: integer;
-      begin
-	for i := 1 to NumArcs do
-	  initMatch[i]:= false;
-      end;
+    var
+	    i: integer;
+    begin
+	    for i := 1 to NumArcs do
+	      initMatch[i]:= false;
+    end; { initInitMatch - simply sets all edges to be not in current matching }
 
-    begin (* read Match *)
-      initInitMatch;
-      readln(arc);  { first value }
-      while arc <> 0 do begin
-	{ check edge number }
- 	if ( arc < 1 ) or ( arc > NumArcs ) then begin
- 	  writeln( arc, ' is not a valid edge number');
-	  writeln(' procedure aborted');
-	  writeln(' check initial matching list');
-	  halt;
- 	end; (* if *)
-	if initMatch[arc] then
- 	  writeln(arc,' is input for intial matching more than once');
- 	initMatch[arc]:= true;
-	readln(arc);
-       end; (* while *)
-      { check that every edge in the intial matching has its mate in the
-	 initial matching  }
-      arc := 1;
-      while arc < NumArcs do begin
-	 if initMatch[arc] <> initMatch[arc+1] then begin
-	   writeln(' only one of the pair ', arc, arc + 1,
-		  ' is in the initial matching');
-	   writeln(' execution halts');
-	   halt;
-	 end; (* if *)
-	 arc:= arc + 2;
-       end; (* while *)
-         readMatchTrace(initMatch, NumArcs); 
-     end;  (* read Match *)
-
+  begin (* read Match *)
+    initInitMatch;
+    readln(arc);  { first arc/element }
+    while arc <> 0 do begin
+	    { check edge number }
+ 	    if ( arc < 1 ) or ( arc > NumArcs ) then begin
+ 	      writeln( arc, ' is not a valid edge number');
+	      writeln(' procedure aborted');
+	      writeln(' check initial matching list');
+	      halt;
+ 	    end; (* if edge number is not valid *)
+	    if initMatch[arc] then
+ 	      writeln('Warning: ', arc,' is input for intial matching more than once');
+ 	    initMatch[arc]:= true;
+	    readln(arc);
+    end; (* while there are more initial matching edges *)
+    { check that every edge in the intial matching has its mate in the
+	    initial matching  }
+    arc := 1;
+    while arc < NumArcs do begin
+	    if initMatch[arc] <> initMatch[arc+1] then begin
+	      writeln(' only one of the pair ', arc, arc + 1,
+		            ' is in the initial matching');
+	      writeln(' execution halts');
+	      halt;
+	    end; (* if one element of a pair is in and the other is out of the initial matching *)
+	    arc:= arc + 2;
+    end; (* while *)
+    readMatchTrace(initMatch, NumArcs); 
+  end;  (* read Match *)
 
   procedure checkMatch; 
     { This routine verifies that the arcs input for the initial matching
@@ -1359,21 +1357,21 @@ procedure Initialize;
      i: integer;
      v, w: VERTEX;
   begin
-     for i := 1 to NumArcs do 
-        if initMatch[i] then begin
-           v:= Parity[i]^.end1;
-           w:= Parity[i]^.end2;
-           if AreEquivalent(v,w) then begin
-              writeln('edge ',i,' forms a cycle with edges previously',
-                      ' selected for the initial matching');
-              writeln(' execution halts');
-              halt;
-           end; (* if AreEquivalent *)
-           Merge(v, w);
-           { execute Swap for one of the parity mates }
-           if i mod 2 = 0 then 
-              Swap(i);
-        end; (* if initMatch *)
+    for i := 1 to NumArcs do 
+      if initMatch[i] then begin
+        v:= Parity[i]^.end1;
+        w:= Parity[i]^.end2;
+        if AreEquivalent(v,w) then begin
+          writeln('edge ',i,' forms a cycle with edges previously',
+                  ' selected for the initial matching');
+          writeln(' execution halts');
+          halt;
+        end; (* if two edges of a pair form a cycle with previous matching elements *)
+        Merge(v, w);
+        { execute Swap for one of the parity mates }
+        if i mod 2 = 0 then 
+          Swap(i);
+      end; (* if initMatch *)
   end; (* check Match *)
 
 
