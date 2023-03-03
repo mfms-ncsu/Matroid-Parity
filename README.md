@@ -1,4 +1,4 @@
-# Matroid-Parity
+# Matroid-Parity, Pascal implementation
 This directory contains all files needed to run the cardinality matroid 
 parity program based on the algorithm described in Gabow and Stallmann, 
 *An Augmenting Path Algorithm for Linear Matroid Parity*, Combinatorica 
