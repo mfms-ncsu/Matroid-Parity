@@ -16,6 +16,8 @@ To compile with `fpc`, use the `-Miso` option.
 ** CAUTION **
 *There appears to be a bug. More information is in the Counterexample subdirectory. The relevant input is counterexample.txt.*
 
+A python implementation that fixes the bug is at [https://github.com/Arkhist/Graphic-Matroid-Parity](https://github.com/Arkhist/Graphic-Matroid-Parity).
+
 Input to the parity program (from stdin) takes the following format:
 (edges come in pairs, so edge 2k-1 and 2k form a pair)
 ```
